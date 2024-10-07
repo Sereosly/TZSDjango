@@ -1,0 +1,22 @@
+<!-- Store/templates/profile.html -->
+{% extends 'base.html' %}
+
+{% block title %}Профиль - {{ block.super }}{% endblock %}
+
+{% block content %}
+    <h1>Профиль пользователя</h1>
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">{{ user.username }}</h5>
+            <h2>Ваши избранные товары</h2>
+            <ul>
+                {% for favorite in favorites %}
+                    <li>{{ favorite.name }}</li>
+                {% empty %}
+                    <li>Пока нет избранных! Надо это исправить</li>
+                {% endfor %}
+            </ul>
+            <p class="card-text">Дата регистрации: {{ user.date_joined|date:"d.m.Y" }}</p>
+        </div>
+    </div>
+{% endblock %}
