@@ -3,15 +3,29 @@
 {% block title %}{{ product.name }} - {{ block.super }}{% endblock %}
 
 {% block content %}
-<h1>{{ product.name }}</h1>
-<div class="row">
-    <div class="col-md-6">
-        <img src="{{ product.image.url }}" class="img-fluid" alt="{{ product.name }}">
+    <h1>{{ product.name }}</h1>
+    <div class="row">
+        <div class="col-md-6">
+            {% if product.image %}
+                <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}">
+            {% else %}
+                <div class="card-img-top bg-light text-center py-5">Нет изображения</div>
+            {% endif %}
+        </div>
+        <div class="col-md-6">
+            <p>{{ product.description }}</p>
+            <p><strong>Цена: {{ product.price }} руб.</strong></p>
+            {% if request.user.is_authenticated %}
+                <form action="{% url 'toggle_favorite' product.id %}" method="post">
+                    {% csrf_token %}
+                    {% if product in request.user.favorites.all %}
+                        <button type="submit" class="btn btn-danger">Убрать из избранного</button>
+                    {% else %}
+                        <button type="submit" class="btn btn-outline-primary">В избранное</button>
+                    {% endif %}
+                </form>
+            {% endif %}
+
+        </div>
     </div>
-    <div class="col-md-6">
-        <p>{{ product.description }}</p>
-        <p><strong>Цена: {{ product.price }} руб.</strong></p>
-        <button class="btn btn-primary">Добавить в корзину</button>
-    </div>
-</div>
 {% endblock %}

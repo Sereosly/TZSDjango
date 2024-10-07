@@ -1,6 +1,5 @@
 from django.apps import AppConfig
 
-class ShopConfig(AppConfig):
+class StoreConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'Store'
-    verbose_name = 'Интернет-магазин'
+    name = 'Store'  # Убедись, что имя совпадает с именем папки

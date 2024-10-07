@@ -1,0 +1,7 @@
+<a href="{% url 'toggle_favorite' product.id %}">
+    {% if is_favorite %}
+        <button>Убрать из избранного</button>
+    {% else %}
+        <button>Добавить в избранное</button>
+    {% endif %}
+</a>

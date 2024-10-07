@@ -1,37 +1,40 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views.generic import TemplateView, DetailView
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.views import LogoutView
 from .models import Product, Category
 from .mixins import FavoriteMixin
 from django.views import View
 from .forms import CustomUserCreationForm
 
 
-# Главная страница, которая показывает случайные товары (5-10)
-def home(request):
-    products = Product.objects.order_by('?')[:10]
-    return render(request, 'home.html', {'products': products})
+class HomeView(FavoriteMixin, TemplateView):
+    template_name = 'home.html'
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['random_products'] = Product.objects.all().order_by('?')[:10]
 
-def product_list(request):
-    categories = Category.objects.all()
+        context['categories'] = Category.objects.all()
+
+        return context
+
+def ProductListView(request):
     products = Product.objects.all()
+    context = {
+        'products': products
+    }
+    return render(request, 'product_list.html', context)
 
-    # Фильтрация по категории
-    category = request.GET.get('category')
-    if category:
-        products = products.filter(category_id=category)
-
-    # Фильтрация по диапазону цен
-    min_price = request.GET.get('min_price')
-    max_price = request.GET.get('max_price')
-    if min_price:
-        products = products.filter(price__gte=min_price)
-    if max_price:
-        products = products.filter(price__lte=max_price)
-
-    return render(request, 'product_list.html', {'products': products, 'categories': categories})
-
+def CategoryProductsView(request, category_id):
+    # Получаем категорию по ID или возвращаем 404, если не найдена
+    category = get_object_or_404(Category, id=category_id)
+    products = Product.objects.filter(category=category)
+    context = {
+        'category': category,
+        'products': products
+    }
+    return render(request, 'category_products.html', context)
 
 class ProductDetailView(FavoriteMixin, DetailView):
     model = Product
@@ -51,7 +54,7 @@ class ProfileView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user = self.request.user
-        context['favorites'] = user.favorites.all()
+        context['templatetags'] = user.favorites.all()
         return context
 
 class RegisterView(View):
@@ -65,3 +68,14 @@ class RegisterView(View):
             form.save()
             return redirect('login')  # Замените на вашу страницу логина
         return render(request, 'registration/register.html', {'form': form})
+
+
+class CustomLogoutView(LogoutView):
+    def get_next_page(self):
+        # Получаем URL из параметра next
+        next_page = self.request.GET.get('next')
+
+        if next_page == 'profile/':
+            return '/'
+
+        return next_page or '/'
